@@ -21,6 +21,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
@@ -50,7 +51,8 @@ import com.athena.asm.data.Post;
 public class SmthCrawler {
 	public static String smthEncoding = "GBK";
 	public static String mobileSMTHEncoding = "UTF-8";
-	public static String userAgent = "Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.1.4) Gecko/20091016 Firefox/3.5.4";
+	public static String userAgent = HttpClientHelper.USER_AGENT;
+	public static CookieStore smthCookie;
 
 	private int threadNum;
 	private ExecutorService execService;
@@ -70,6 +72,10 @@ public class SmthCrawler {
 	private SmthCrawler() {
 		init();
 	}
+
+    public static CookieStore getCookieStore(){
+        return smthCookie;
+    }
 
 	public void init() {
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
@@ -131,6 +137,8 @@ public class SmthCrawler {
 			} else if (content.contains("用户密码错误")) {
 				return 0;
 			}
+            // 保存cookie
+            smthCookie = httpClient.getCookieStore();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return -1;
@@ -273,6 +281,9 @@ public class SmthCrawler {
 		HttpGet httpget = new HttpGet(url);
 		httpget.setHeader("User-Agent", userAgent);
 		httpget.addHeader("Accept-Encoding", "gzip, deflate");
+        if(smthCookie != null){
+            httpClient.setCookieStore(smthCookie);
+        }
 		String content;
 		try {
 			HttpResponse response = httpClient.execute(httpget);
@@ -309,30 +320,30 @@ public class SmthCrawler {
 		return content;
 	}
 
-    public String fetchContentType(String url) {
+    public String fetchAttachmentFilename(String url) {
         HttpHead httphead = new HttpHead(url);
         httphead.setHeader("User-Agent", userAgent);
-        String content_type = "unknown";
+        String filename = "file.unknown";
         try {
             HttpResponse response = httpClient.execute(httphead);
-            Header[] headers = response.getHeaders("Content-Type");
+            Header[] headers = response.getHeaders("Content-Disposition");
             if (headers != null && headers.length != 0) {
                 for (Header header : headers) {
                     String s = header.getValue();
-                    if (s.contains("image/")) {
-                        String[] results = s.split("/");
-                        if(results.length == 2){
-                            content_type = results[1];
-                            // Log.d("fetchContentType", url + content_type);
-                            return content_type.toLowerCase();
-                        }
+                    if (s.contains("filename")) {
+						// how to decode filename from http header:
+						// http://stackoverflow.com/questions/93551/how-to-encode-the-filename-parameter-of-content-disposition-header-in-http
+                        String rawValue = s.substring(s.lastIndexOf("=") + 1);
+                        filename = rawValue;
+                        // Log.d("fetchAttachmentFilename", url + filename);
+                        return filename;
                     }
                 }
             }
         } catch (Exception e) {
             Log.e("Crawler:fetchContent", "get url failed,", e);
         }
-        return content_type;
+        return filename;
     }
 
 	public String getUrlContentFromMobile(String url) {

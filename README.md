@@ -9,12 +9,31 @@ http://asm.zfdang.com/
 
 下载地址
 ==============================
-Build Date: 2013-12-24.
+Build Date: 2014-08-15.
 
 <a href="https://github.com/zfdang/asm-android-client-for-newsmth/raw/master/dist/aSM.apk">aSM.apk</a>
 
 更新历史
 ==============================
+
+2014-08-15:
+------------------------------
+1. 更新了eclipse的project相关文件
+2. copy了daoxiangcun@github的fetchContent和httpurldownloader使用同一个cookie的代码
+3. 使用android support library中的pull to refresh控件
+
+2014-08-14:
+------------------------------
+1. 修正了十大加载不进来时，crash的bug
+
+2014-08-04:
+------------------------------
+1. 附件文件显示真实的文件名，不过中文没处理好
+
+2014-08-03:
+------------------------------
+1. 修正了一个null pointer的bug，这样在网络不好的时候，就不会频繁crash了
+2. 调整了图片缩放的实现，优先调整宽度，不再要求高度也在一屏内
 
 2013-12-24:
 ------------------------------

@@ -110,6 +110,9 @@ public class PostListAdapter extends BaseAdapter implements OnClickListener, Sec
 		ConnectivityManager connectionManager =
 				(ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = connectionManager.getActiveNetworkInfo();
+		if (networkInfo == null)
+			// no active network connection
+			return 0;
 		int netType = networkInfo.getType();
 		// WIFI下全部下载
 		if (netType == ConnectivityManager.TYPE_WIFI) {
@@ -181,8 +184,8 @@ public class PostListAdapter extends BaseAdapter implements OnClickListener, Sec
 			StringBuilder contentBuilder = new StringBuilder();
 			contentBuilder.append("");
 
-			if (attachments.size() >= 8){
-				// 如果照片数量多余8张，不再放大图片
+			if (attachments.size() >= 16){
+				// 如果照片数量多余16张，不再放大图片
 				UrlImageViewHelper.setUseZoomIn(false);
 			}
 			else{
